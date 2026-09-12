@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin" />
+<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #060605; }
+  body { overflow: hidden; }
+  a { color: #c89a5a; } a:hover { color: #f1ede5; }
+</style>
+</helmet>
+<div style="position:relative;width:100%;height:100vh;background:#060605;overflow:hidden">
+  <x-import component-from-global-scope="gallery-room" from="./gallery3d.js" variant="cabinet" hint-size="100%,100%"></x-import>
+</div>
+</x-dc>
+</body>
+</html>

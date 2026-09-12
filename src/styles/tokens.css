@@ -1,0 +1,87 @@
+/* Design tokens transcribed from design/README.md — the nocturne concept. */
+
+:root {
+  /* surfaces */
+  --surface-void: #060607;
+  --surface-wall: #3d372f;
+  --surface-ceiling: #241f1b;
+  --surface-floor: #2c261e;
+  --surface-baseboard: #2a2621;
+  --surface-frame: #0b0a09;
+  --surface-mat: #e9e2d5;
+  --surface-plaque: #1a1715;
+
+  /* light */
+  --light-hemi-sky: #7f8d9d;
+  --light-hemi-ground: #2a251f;
+  --light-skylight: #a8bdd6;
+  --light-spot: #ffe2b4;
+  --light-passage: #fff2e0;
+  --light-fill: #fff6ea;
+
+  /* ui */
+  --ui-ink: #f1ede5;
+  --ui-panel: rgba(20, 18, 17, 0.9);
+  --ui-hairline: rgba(241, 237, 229, 0.17);
+  --ui-link: #c89a5a;
+  --ui-link-hover: #f1ede5;
+
+  /* type */
+  --font-serif: "Spectral", Georgia, "Times New Roman", serif;
+  --font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --size-title: clamp(38px, 6.4vw, 76px);
+  --size-room-name: 27px;
+  --size-caption-title: 22px;
+  --size-subtitle: 14px;
+  --size-caption-note: 13.5px;
+  --size-label: 10px;
+  --size-caption-meta: 9.5px;
+  --size-index: 9.5px;
+  --size-dismiss-hint: 9px;
+
+  /* layout */
+  --overlay-inset: 26px;
+  --overlay-inset-side: 28px;
+  --panel-padding: 22px 24px 20px;
+
+  /* motion */
+  --dur-approach: 1200ms;
+  --dur-step-back: 900ms;
+  --dur-travel: 2700ms;
+  --dur-turn: 1100ms;
+  --dur-entry-dolly: 2600ms;
+  --dur-tooltip-fade: 0.18s;
+  --dur-caption-fade: 0.5s;
+  --dur-hint-fade: 0.6s;
+  --dur-cover-fade: 1s;
+  --ease-in-out-cubic: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--surface-void);
+}
+
+body {
+  overflow: hidden;
+  font-family: var(--font-sans);
+  color: var(--ui-ink);
+}
+
+a {
+  color: var(--ui-link);
+}
+
+a:hover {
+  color: var(--ui-link-hover);
+}
