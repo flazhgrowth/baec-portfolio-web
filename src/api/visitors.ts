@@ -19,15 +19,15 @@ function visitId(): string {
 }
 
 export async function submitVisitor(name: string): Promise<CreateVisitorResponse> {
-  return apiFetch<CreateVisitorResponse>("/visitors", {
+  return apiFetch<CreateVisitorResponse>("/guests", {
     method: "POST",
-    body: JSON.stringify({ name, visitId: visitId() }),
+    body: JSON.stringify({ name, visit_id: visitId() }),
     signal: AbortSignal.timeout(TIMEOUT_MS),
   });
 }
 
-export async function fetchGuestbook(limit = 50): Promise<GuestbookResponse> {
-  return apiFetch<GuestbookResponse>(`/guestbook?limit=${limit}`, {
+export async function fetchGuestbook(size = 50): Promise<GuestbookResponse> {
+  return apiFetch<GuestbookResponse>(`/guests?size=${size}`, {
     signal: AbortSignal.timeout(TIMEOUT_MS),
   });
 }

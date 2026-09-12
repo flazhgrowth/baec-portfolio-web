@@ -28,7 +28,7 @@ export default function Guestbook() {
     fetchedRef.current = true;
     setLoading(true);
     fetchGuestbook()
-      .then((res) => setEntries(res.entries))
+      .then((res) => setEntries(res.guests))
       .catch((err: unknown) => {
         setError(err instanceof Error ? err.message : "Could not load the guestbook.");
       })
@@ -52,9 +52,9 @@ export default function Guestbook() {
           <div className={styles.guestbookMuted}>No visitors yet — be the first.</div>
         )}
         {entries?.map((v) => (
-          <div key={v.id} className={styles.guestbookRow}>
+          <div key={v.id ?? `${v.name}-${v.visited_at}`} className={styles.guestbookRow}>
             <span className={styles.guestbookName}>{v.name}</span>
-            <span className={styles.guestbookDate}>{formatDate(v.enteredAt)}</span>
+            <span className={styles.guestbookDate}>{formatDate(v.visited_at)}</span>
           </div>
         ))}
       </div>

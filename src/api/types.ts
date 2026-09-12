@@ -1,13 +1,16 @@
 export interface VisitorRecord {
-  id: string;
+  /** Not always present on GET /guests entries — see docs/api-contract.md. */
+  id?: number;
   name: string;
-  enteredAt: string;
+  visited_at: string;
 }
 
 export type CreateVisitorResponse = VisitorRecord;
 
 export interface GuestbookResponse {
-  entries: VisitorRecord[];
-  total: number;
-  nextCursor: string | null;
+  guests: VisitorRecord[];
+  pagination: {
+    total: number;
+    cursor: string | null;
+  };
 }
