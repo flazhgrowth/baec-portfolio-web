@@ -35,6 +35,17 @@ export interface ArtPlacement {
   /** vertical offset from CENTER_HEIGHT, metres, positive = higher. Omit for the
    * standard eye-level hang; used for a staggered salon-style cluster. */
   v?: number;
+  /** Overrides compileSpace's default "3 widest per room" spotlight pick:
+   * `true` forces this placement to be lit regardless of width, `false` forces
+   * it to never be (e.g. to free up budget for a `true` elsewhere). Omit for
+   * the default width-based behavior. See compileSpace.ts's `litIndexes`. */
+  lit?: boolean;
+  /** Tangential offset (metres, along the wall, same direction as `u`) applied
+   * ONLY to this placement's spotlight aim point — the picture itself still
+   * hangs at `u`. Lets one light center over a cluster of placements packed
+   * close together (e.g. a vertical stack) instead of just this one's own
+   * position. Ignored unless this placement ends up lit. */
+  litOffset?: number;
 }
 
 export interface Partition {
@@ -60,6 +71,12 @@ export interface RoomSpec {
   skylight?: boolean;
   partition?: Partition;
   art: ArtPlacement[];
+  /** Overrides compileSpace's default MAX_LIT_PER_ROOM for this room only.
+   * Safe to raise per room since Hang.tsx's ArtLighting only ever renders the
+   * currently-occupied room's lights — the frame-rate cost only applies while
+   * a visitor is standing in the room you raise it for. Omit to use the
+   * variant-wide default. */
+  maxLit?: number;
 }
 
 export interface LinkSpec {

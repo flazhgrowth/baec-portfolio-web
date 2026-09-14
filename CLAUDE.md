@@ -105,9 +105,16 @@ src/api/           Client for the (separately deployed) guestbook backend. See
   the picture's `<group>`** — it's positioned in world space as a sibling, because the
   original adds it directly to `scene`, not to the picture group, and the standoff/height
   math only comes out right in world coordinates.
-- **Only the three widest pictures per room get a spotlight** (`compileSpace.ts`'s
-  `litIndexes`) — this is a performance ceiling from the original design
-  (`design/README.md`: roughly 1fps per extra light), not a style choice to relax.
+- **Only up to `MAX_LIT_PER_ROOM` (or a room's own `RoomSpec.maxLit` override)
+  pictures per room ever get a spotlight** (`compileSpace.ts`'s `litIndexes`,
+  widest-first, overridable per placement with `ArtPlacement.lit`/`litOffset`) —
+  a performance ceiling from the original design (`design/README.md`: roughly
+  1fps per extra light), not a style choice to relax. It's a *per-room* budget,
+  not global: `Hang.tsx`'s `ArtLighting` only actually mounts a placement's
+  spotlight/track fixture while `roomId` in the store equals that placement's
+  room, so at most one room's lights are ever live at once regardless of how
+  many rooms the variant has — raising the budget (globally or for one room via
+  `maxLit`) costs frame rate only in the room a visitor is currently standing in.
 - **The name-gate's global keydown handler must keep bailing on typing targets** — WASD
   and Escape are bound on `window` for in-gallery navigation; without the
   `isTypingTarget` guard in `createController.ts`, a visitor typing "d" or "escape" into

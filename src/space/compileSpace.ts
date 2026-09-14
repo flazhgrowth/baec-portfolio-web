@@ -14,6 +14,16 @@ import type {
 } from "@/space/types";
 
 /**
+ * Default spotlight budget per room, before ArtLighting's roomId gate
+ * (Hang.tsx) even applies. Was 3 when every room's lights stayed mounted and
+ * live for the whole session (up to ~10 concurrent across a 4-room variant);
+ * now that only the occupied room's lights are ever actually rendered, the
+ * worst case is one room's budget, not the sum across rooms — see Hang.tsx's
+ * ArtLighting and CLAUDE.md. A room can override this with RoomSpec.maxLit.
+ */
+const MAX_LIT_PER_ROOM = 6;
+
+/**
  * Pure spec -> CompiledSpace. Replaces design/gallery3d.js's in-place mutation of
  * its own data tables (`r.h = r.h || V.roomH`, `L._sA = ...`) with a derivation that
  * never touches `spec`, so re-running it (StrictMode, HMR) is always safe.
@@ -94,11 +104,22 @@ export function compileSpace(spec: SpaceSpec): CompiledSpace {
   const litIndexes: CompiledSpace["litIndexes"] = {};
   for (const r of Object.values(roomById)) {
     const list = r.art;
+    // `lit: true` is pinned in regardless of width; `lit: false` is excluded
+    // from the auto pick. Both still count against the room's light budget
+    // (see CLAUDE.md's performance-ceiling note) — pinning doesn't add lights,
+    // it just picks which ones. The budget itself (MAX_LIT_PER_ROOM) can be
+    // larger than the old always-on ceiling because Hang.tsx only ever
+    // actually renders a room's lights while the visitor is standing in it —
+    // see ArtLighting's roomId gate.
+    const roomBudget = r.maxLit ?? MAX_LIT_PER_ROOM;
+    const pinned = list.map((_, i) => i).filter((i) => list[i].lit === true);
+    const autoBudget = Math.max(0, roomBudget - pinned.length);
     const widestFirst = list
       .map((_, i) => i)
+      .filter((i) => list[i].lit !== true && list[i].lit !== false)
       .sort((i, j) => list[j].w - list[i].w)
-      .slice(0, 3);
-    litIndexes[r.id] = new Set(widestFirst);
+      .slice(0, autoBudget);
+    litIndexes[r.id] = new Set([...pinned, ...widestFirst]);
 
     const roomRecords: ArtRecord[] = [];
     for (const placement of list) {

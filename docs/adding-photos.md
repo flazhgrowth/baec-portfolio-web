@@ -123,38 +123,85 @@ almost entirely empty.
 
 ## Lighting
 
-There's no per-picture "make this one lit" flag. `compileSpace.ts` picks the
-**three widest placements in each room** (by `w`) and gives only those a
-spotlight + track fixture (`litIndexes`, computed per room). This is a
-deliberate performance ceiling carried over from the original design spec
-(`design/README.md`: roughly 1fps per extra light) — not something to relax
-by just adding more lights.
+By default, `compileSpace.ts` picks the **`MAX_LIT_PER_ROOM` widest
+placements in each room** (by `w`; currently 6 — see the constant at the top
+of `compileSpace.ts`) and gives only those a spotlight + track fixture
+(`litIndexes`, computed per room). This budget is a deliberate performance
+ceiling carried over from the original design spec (`design/README.md`:
+roughly 1fps per extra light) — but it's a *per-room* budget only in the room
+a visitor is currently standing in: `Hang.tsx`'s `ArtLighting` only actually
+mounts a spotlight/track fixture while the store's `roomId` matches that
+placement's room, so lights in every other room render nothing. That's why
+this number can be meaningfully higher than the old always-on ceiling of 3 —
+raising it only costs frame rate in the one room it applies to at a time, not
+summed across the whole variant.
 
-What this means in practice:
+Two optional `ArtPlacement` fields override which placements fill that
+budget, without raising it:
 
-- **To get a new photo lit**, make it wider than the room's current
-  3rd-widest piece. Check the room's `art` list in `nocturne.ts` and sort by
-  `w` — e.g. in the Hall, the current lit set is `p2` (2.95), `p1` (2.55),
-  `x3` (1.5), so anything under 1.5m wide won't be lit no matter where you
-  put it, and adding a >1.5m piece will bump `x3` out of the lit set.
-- **Small/accent pieces stay unlit** by design (this is intentional — see the
-  trio left of `x3`, or the existing `x1`/`x4`/`x5`/`x6` placeholders scattered
-  around). They're still visible under the room's ambient/hemisphere light,
-  just dimmer. Don't chase a bright screenshot of one of these; it's supposed
-  to read as a quiet accent, not a hero piece.
+- **`lit?: boolean`** — `true` pins a placement into the room's lit set
+  regardless of width (it still counts against the room's light budget, so it
+  can bump a widest-by-default piece out); `false` excludes it even if it
+  would otherwise qualify by width. Omit for the default width-based pick.
+- **`litOffset?: number`** — shifts *only the spotlight's aim point* along
+  the wall (same direction/units as `u`); the picture itself still hangs at
+  its own `u`. Use this to center one light over a cluster of placements
+  packed close together instead of illuminating only the `lit: true`
+  placement's own position.
+
+Worked example — the vertical trio left of `x3` in the Hall (`x7`/`x8`/`x9`,
+each only 0.65m wide, none of which would ever win the widest-3 pick):
+
+```ts
+{ k: "x7", wall: "W", u: 5.3, w: 0.65, v: -0.85 },
+{ k: "x8", wall: "W", u: 6.5, w: 0.65, v: 0, lit: true, litOffset: -0.6 },
+{ k: "x9", wall: "W", u: 5.7, w: 0.65, v: 0.85 },
+```
+
+`x8` sits at the trio's vertical middle (`v: 0`), so it's the natural anchor;
+`litOffset: -0.6` nudges the spotlight's horizontal aim from `x8`'s own `u`
+(6.5) to roughly the trio's horizontal centre (5.9), so one light — one
+spotlight, one track fixture, one frame-rate cost — reads as covering all
+three instead of spotlighting just `x8`. `x7`/`x9` need no `lit`/`litOffset`
+of their own; they're never rendered with their own fixture, only whatever
+falls on them from `x8`'s light.
+
+What else this means in practice:
+
+- **To get an unpinned photo lit**, make it wider than the room's current
+  `MAX_LIT_PER_ROOM`-th-widest piece (check the room's `art` list in
+  `nocturne.ts`, sort by `w`), or pin it with `lit: true`. Either way it
+  still costs one of the room's slots — pinning trades away whichever piece
+  would otherwise have filled that slot, same as sizing one up would.
+- **Small/accent pieces stay unlit** by default and that's fine — they're
+  still visible under the room's ambient/hemisphere light, just dimmer. Don't
+  reach for `lit: true` on every small piece; it's supposed to read as a
+  quiet accent, not a hero piece, unless (like the trio) you're deliberately
+  grouping several under one fixture.
 - **The spotlight's look is global**, not per-picture: `spec.spot` in
   `nocturne.ts` (`color`, `i` intensity, `angle`, `pen` penumbra, `dist`
   throw, `standoff` distance from the wall) applies to every lit piece in the
   whole variant, as does `spec.track`/`trackColor`/`railColor` (the ceiling
   fixture look). Changing these changes every spotlight in every room at
-  once — there's no room-by-room or picture-by-picture override today.
-- **If you actually need more than 3 lit pieces per room**, or specific
-  pieces lit regardless of width, that's a small code change, not a data
-  change: `litIndexes` in `src/space/compileSpace.ts` is where the
-  widest-3 rule lives. Swapping it for (or supplementing it with) an explicit
-  `lit?: boolean` on `ArtPlacement` would work, but think about the frame-rate
-  cost first — that's exactly the tradeoff the original 3-light ceiling was
-  drawn to avoid.
+  once — there's no room-by-room or picture-by-picture override for color/
+  intensity/angle, only for *which* placements get a fixture and where it
+  aims.
+- **Only the room you're standing in ever renders its lights** — walk into
+  North Room and the Hall's spotlights (however many are in its lit set)
+  unmount; walk back and they remount. This is what makes a `MAX_LIT_PER_ROOM`
+  well above the old ceiling of 3 safe: the worst case is one room's budget,
+  not the sum of every room's. It does mean a room's lights aren't visible
+  from just outside it (e.g. through a doorway before you've crossed the
+  threshold) — that threshold is the same `roomId` transit the room tag and
+  caption panel already key off, not a new boundary.
+- **Raising the budget for one room only** — a `RoomSpec` can set
+  `maxLit?: number` to override `MAX_LIT_PER_ROOM` just for that room (e.g.
+  the Hall has `maxLit: 7`). Omit it to use the variant-wide default.
+- **Raising `MAX_LIT_PER_ROOM` itself** changes the default for every room
+  that doesn't set its own `maxLit` — a one-line change at the top of
+  `src/space/compileSpace.ts`. Either way, still worth checking a real
+  device's frame rate in the room you raise it for, since it's a real cost
+  while you're standing there, just no longer a cost everywhere else too.
 
 ## Real photo vs. placeholder
 

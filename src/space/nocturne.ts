@@ -65,22 +65,43 @@ const raw: SpaceSpec = {
       h: 6.8,
       skylight: true,
       home: [0, 7.2],
+      maxLit: 7,
       partition: { c: [0, 0.8], s: [8.0, 0.46], h: 3.6 },
       art: [
         // w scaled to 80% of its original 2.95m hang width; height still derives
         // from artworks.ts's declared `ar` for p2, so the print's proportions hold.
-        { k: "p2", wall: "P+", u: -1.4, w: 1.5 },
-        { k: "x1", wall: "P+", u: 2.7, w: 1.2 },
-        { k: "x2", wall: "P-", u: 0, w: 1.4 },
-        { k: "p1", wall: "W", u: -2.8, w: 1.8, v: 0.6},
-        { k: "x3", wall: "W", u: 3.4, w: 1.5 },
+        { k: "p2", wall: "P+", u: -1.4, w: 1.5, lit: true}, // 1
+        { k: "x1", wall: "P+", u: 2.0, w: 1.5, lit: true}, // 2
+
+        { k: "x2", wall: "P-", u: 0, w: 1.4, lit: false },
+
+        { k: "p1", wall: "W", u: -4, w: 1.8, v: 0.6, lit: true}, // 3
+
+        { k: "x3", wall: "W", u: 3.4, w: 1.5, lit: false},
         // A vertical trio left of x3 (toward the wall's far corner): stacked mainly
         // by height (v), with only a slight rightward creep in u as it climbs —
         // not a diagonal, just enough offset that it doesn't read as one column.
-        { k: "x7", wall: "W", u: 5.3, w: 0.65, v: -0.85 },
-        { k: "x8", wall: "W", u: 6.5, w: 0.65, v: 0 },
-        { k: "x9", wall: "W", u: 5.7, w: 0.65, v: 0.85 },
-        { k: "x4", wall: "S", u: 4.8, w: 1.1 },
+        // Rather than 3 separate spotlights, x8 (the vertical middle, v: 0) is
+        // pinned lit and its aim nudged toward the trio's horizontal centre
+        // (u 6.5 - 0.6 = 5.9) via litOffset, so one light covers all three.
+        { k: "x7", wall: "W", u: 5.3, w: 0.65, v: -0.85, lit: false },
+        { k: "x8", wall: "W", u: 7.0, w: 1.2, v: -0.2, lit: true, litOffset: -1.7 }, // 4
+        { k: "x9", wall: "W", u: 5.5, w: 0.85, v: 1.0, lit: false },
+
+        { k: "x4", wall: "S", u: 4.8, w: 1.1, lit: false},
+
+
+        { k: "x10_1", wall: "N", u: -6, w: 0.7, v: -0.7, lit: false},
+        { k: "x10_2", wall: "N", u: -6, w: 0.7, v: 0.1, lit: false},
+        { k: "x10_3", wall: "N", u: -6, w: 0.7, v: 0.9, lit: false},
+        { k: "x10_6", wall: "N", u: -4.3, w: 1.0, v: 0, lit: true}, // 5
+        { k: "x10_4", wall: "N", u: -2.5, w: 1.0, v: 0.9, lit: false},
+        { k: "x10_5", wall: "N", u: -2.5, w: 1.0, v: -0.5, lit: false},
+
+        { k: "x11_1", wall: "E", u: -4.5, w: 1.5, v: 1.6, lit: true}, // 6
+        { k: "x11_3", wall: "E", u: -4.5, w: 1.5, v: 0.0, lit: false},
+        { k: "x11_2", wall: "N", u: 4.5, w: 1.5, v: 0.9, lit: true}, // 7
+        { k: "x11_4", wall: "N", u: 4.5, w: 1.5, v: -0.7, lit: false},
       ],
     },
     {

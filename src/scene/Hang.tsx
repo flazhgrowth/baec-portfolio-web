@@ -6,6 +6,7 @@ import { placeholderTexture, plaqueTexture } from "@/textures/canvasTextures";
 import { readPhotoTexture } from "@/textures/photoTextures";
 import Hotspot from "@/scene/Hotspot";
 import { useMaterials } from "@/scene/useMaterials";
+import { useGallery } from "@/store/useGallery";
 import { isRealArtwork } from "@/space/types";
 import type { ArtPlacement, ArtRecord, CompiledRoom, SpaceSpec } from "@/space/types";
 
@@ -18,9 +19,11 @@ interface HangProps {
 }
 
 /** One hung picture: frame, mat, image, wall plaque and a click hotspot, plus (for
- * the three widest pictures per room) a spotlight and track fixture. The spotlight
- * and track head are siblings of the picture group, not children of it — their
- * world-space placement formula (`px + n*standoff`, at ceiling height) only matches
+ * placements in the room's lit set — see compileSpace.ts's `litIndexes`) a
+ * spotlight and track fixture that only actually mounts while the visitor is
+ * standing in that room (ArtLighting's `active` check). The spotlight and track
+ * head are siblings of the picture group, not children of it — their world-space
+ * placement formula (`px + n*standoff`, at ceiling height) only matches
  * design/gallery3d.js's `addArt` when computed in world space, same as the original
  * (which adds them to `scene`, not to the picture's own THREE.Group). */
 export default function Hang({ room, placement, rec, spec, lit }: HangProps) {
@@ -29,6 +32,14 @@ export default function Hang({ room, placement, rec, spec, lit }: HangProps) {
   const h = placement.w / src.ar;
   const { px, pz, ry, n } = resolveArtPlacement(room, placement);
   const centerY = CENTER_HEIGHT + (placement.v ?? 0);
+
+  // The spotlight's aim point can be shifted along the wall independently of
+  // the picture itself (litOffset) — e.g. to center one light over a cluster
+  // of placements instead of just this one's own position.
+  const litOffset = placement.litOffset ?? 0;
+  const { px: aimX, pz: aimZ } = litOffset
+    ? resolveArtPlacement(room, { ...placement, u: placement.u + litOffset })
+    : { px, pz };
 
   const fw = placement.w + (spec.matW + spec.frameW) * 2;
   const fh = h + (spec.matW + spec.frameW) * 2;
@@ -61,7 +72,17 @@ export default function Hang({ room, placement, rec, spec, lit }: HangProps) {
         </mesh>
         <Hotspot width={fw} height={fh} position={[0, 0, spec.frameD + 0.02]} userData={{ type: "art", rec }} />
       </group>
-      {lit && <ArtLighting room={room} spec={spec} px={px} pz={pz} centerY={centerY} n={n} materials={materials} />}
+      {lit && (
+        <ArtLighting
+          room={room}
+          spec={spec}
+          px={aimX}
+          pz={aimZ}
+          centerY={centerY}
+          n={n}
+          materials={materials}
+        />
+      )}
     </>
   );
 }
@@ -87,6 +108,14 @@ function ArtLighting({
   const targetRef = useRef<THREE.Object3D>(null);
   const headRef = useRef<THREE.Mesh>(null);
 
+  // Only the room the visitor is currently standing in gets its lights
+  // actually mounted — everywhere else they stay in `litIndexes`' eligible
+  // set (so the room "remembers" what should light up) but render nothing,
+  // which is what lets MAX_LIT_PER_ROOM be a real per-room number instead of
+  // a sum across every room in the variant at once. See compileSpace.ts.
+  const currentRoomId = useGallery((s) => s.roomId);
+  const active = room.id === currentRoomId;
+
   const lightX = px + n[0] * spec.spot.standoff;
   const lightZ = pz + n[2] * spec.spot.standoff;
 
@@ -94,13 +123,15 @@ function ArtLighting({
     if (lightRef.current && targetRef.current) {
       lightRef.current.target = targetRef.current;
     }
-  }, []);
+  }, [active]);
 
   useLayoutEffect(() => {
     if (!headRef.current) return;
     headRef.current.lookAt(px, centerY, pz);
     headRef.current.rotateX(Math.PI / 2);
-  }, [px, pz, centerY]);
+  }, [px, pz, centerY, active]);
+
+  if (!active) return null;
 
   return (
     <>
