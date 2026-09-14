@@ -19,6 +19,11 @@ export interface GalleryState {
   assetsReady: boolean;
   guestbookOpen: boolean;
   visitorName: string;
+  /** Whether the Special Room's token gate has been passed this session. Doubles
+   * as the walking-collision gate — see controller/gatedRoom.ts. */
+  specialUnlocked: boolean;
+  /** Whether the token-entry modal is open — see overlay/SpecialGate.tsx. */
+  specialGateOpen: boolean;
 }
 
 export type GalleryStore = ReturnType<typeof createGalleryStore>;
@@ -40,5 +45,7 @@ export function createGalleryStore(initial: Pick<GalleryState, "roomId" | "profi
     assetsReady: false,
     guestbookOpen: false,
     visitorName: "",
+    specialUnlocked: false,
+    specialGateOpen: false,
   }));
 }

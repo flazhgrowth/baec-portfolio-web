@@ -46,6 +46,15 @@ export default function TitleCard({ compiled }: { compiled: CompiledSpace }) {
     controllerRef.current?.enter();
   }
 
+  /** Enters without logging a visit at all — not even the name typed so far. Still
+   * gated on assetsReady, same as the real submit, so a visitor never drops into a
+   * half-loaded scene. */
+  function handleSkip() {
+    if (!assetsReady || submitting) return;
+    setError(null);
+    controllerRef.current?.enter();
+  }
+
   const spec = compiled.spec;
 
   return (
@@ -53,7 +62,7 @@ export default function TitleCard({ compiled }: { compiled: CompiledSpace }) {
       <div className={styles.cvK}>
         {spec.label} · {spec.rooms.length} rooms
       </div>
-      <div className={styles.cvT}>Tokyo · Kyoto · Osaka</div>
+      <div className={styles.cvT}>the · BAECLATANT</div>
       <div className={styles.cvS}>{spec.blurb}</div>
       <form className={styles.cvForm} onSubmit={handleSubmit}>
         <input
@@ -72,6 +81,9 @@ export default function TitleCard({ compiled }: { compiled: CompiledSpace }) {
         />
         <button className={styles.cvB} type="submit" disabled={!canSubmit}>
           {assetsReady ? "Enter the room" : "Preparing the room…"}
+        </button>
+        <button className={styles.cvSkip} type="button" onClick={handleSkip} disabled={!assetsReady || submitting}>
+          Skip — enter without signing the guestbook
         </button>
         <div className={styles.cvHint}>{error ?? " "}</div>
       </form>

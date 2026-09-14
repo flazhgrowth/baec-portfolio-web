@@ -149,6 +149,38 @@
   margin-top: 18px;
 }
 
+/* lightbox — large view of the picture the caption panel is describing */
+.lightbox {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* dims the 3D scene (and the corner UI) behind the framed image so the photo
+     reads as the clear focal point — fades with the same opacity this element
+     already animates, so it's never a separate on/off toggle from the image. */
+  background: rgba(3, 3, 4, 0.72);
+  pointer-events: none;
+  transition:
+    opacity var(--dur-caption-fade),
+    transform var(--dur-caption-fade);
+}
+.lightboxFrame {
+  padding: 16px;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+}
+.lightboxMat {
+  padding: 20px;
+  line-height: 0;
+}
+.lightboxImg {
+  display: block;
+  max-width: 58vw;
+  max-height: 60vh;
+  width: auto;
+  height: auto;
+}
+
 /* veil (hard-cut teleport) */
 .veil {
   position: absolute;
@@ -249,6 +281,28 @@
   opacity: 0.4;
   cursor: default;
 }
+.cvSkip {
+  margin-top: 2px;
+  appearance: none;
+  cursor: pointer;
+  background: none;
+  border: 0;
+  color: #f2efe9;
+  opacity: 0.42;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: opacity 0.3s;
+}
+.cvSkip:hover:not(:disabled),
+.cvSkip:focus-visible:not(:disabled) {
+  opacity: 0.75;
+}
+.cvSkip:disabled {
+  opacity: 0.2;
+  cursor: default;
+}
 .cvHint {
   font-family: var(--font-mono);
   font-size: 9px;
@@ -327,4 +381,104 @@
   opacity: 0.5;
   font-size: 11px;
   font-family: var(--font-sans);
+}
+
+/* special-room token gate */
+.gateBackdrop {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(6, 6, 7, 0.66);
+  backdrop-filter: blur(3px);
+  pointer-events: auto;
+  z-index: 4;
+}
+.gatePanel {
+  width: 300px;
+  max-width: calc(100% - 56px);
+  background: var(--ui-panel);
+  border: 1px solid var(--ui-hairline);
+  padding: 26px 24px;
+  backdrop-filter: blur(10px);
+}
+.gateTitle {
+  font-family: var(--font-serif);
+  font-size: var(--size-caption-title);
+  font-weight: 500;
+}
+.gateBody {
+  font-size: 12.5px;
+  line-height: 1.6;
+  opacity: 0.7;
+  margin-top: 10px;
+}
+.gateForm {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.gateInput {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--ui-hairline);
+  color: var(--ui-ink);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  padding: 8px 2px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+.gateInput:focus {
+  border-color: rgba(241, 237, 229, 0.66);
+}
+.gateActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+.gateCancel,
+.gateSubmit {
+  appearance: none;
+  cursor: pointer;
+  background: none;
+  color: var(--ui-ink);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 10px 16px;
+  border: 1px solid var(--ui-hairline);
+  transition:
+    background 0.3s,
+    border-color 0.3s,
+    opacity 0.3s;
+}
+.gateCancel {
+  opacity: 0.6;
+}
+.gateCancel:hover:not(:disabled) {
+  opacity: 1;
+}
+.gateSubmit:hover:not(:disabled),
+.gateSubmit:focus-visible:not(:disabled) {
+  background: rgba(241, 237, 229, 0.1);
+  border-color: rgba(241, 237, 229, 0.66);
+}
+.gateSubmit:disabled,
+.gateCancel:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.gateHint {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  opacity: 0.6;
+  min-height: 12px;
+  color: #e0a83c;
 }

@@ -32,6 +32,9 @@ export interface ArtPlacement {
   u: number;
   /** picture width in metres; height is derived from the artwork's aspect ratio */
   w: number;
+  /** vertical offset from CENTER_HEIGHT, metres, positive = higher. Omit for the
+   * standard eye-level hang; used for a staggered salon-style cluster. */
+  v?: number;
 }
 
 export interface Partition {
@@ -175,6 +178,9 @@ export interface ArtRecord {
   /** centre height, metres */
   cy: number;
   yaw: number;
+  /** the resolved artwork (src/ph + ar) — carried along so overlay/Lightbox.tsx
+   * can render the image full-size without re-looking it up by key. */
+  artwork: Artwork;
 }
 
 export interface WallHole {

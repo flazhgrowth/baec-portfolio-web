@@ -1,6 +1,6 @@
 import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { resolveArtPlacement } from "@/geometry/layout";
+import { CENTER_HEIGHT, resolveArtPlacement } from "@/geometry/layout";
 import { ARTWORKS } from "@/space/artworks";
 import { placeholderTexture, plaqueTexture } from "@/textures/canvasTextures";
 import { readPhotoTexture } from "@/textures/photoTextures";
@@ -17,8 +17,6 @@ interface HangProps {
   lit: boolean;
 }
 
-const CENTER_HEIGHT = 1.53;
-
 /** One hung picture: frame, mat, image, wall plaque and a click hotspot, plus (for
  * the three widest pictures per room) a spotlight and track fixture. The spotlight
  * and track head are siblings of the picture group, not children of it — their
@@ -30,6 +28,7 @@ export default function Hang({ room, placement, rec, spec, lit }: HangProps) {
   const src = ARTWORKS[placement.k];
   const h = placement.w / src.ar;
   const { px, pz, ry, n } = resolveArtPlacement(room, placement);
+  const centerY = CENTER_HEIGHT + (placement.v ?? 0);
 
   const fw = placement.w + (spec.matW + spec.frameW) * 2;
   const fh = h + (spec.matW + spec.frameW) * 2;
@@ -45,7 +44,7 @@ export default function Hang({ room, placement, rec, spec, lit }: HangProps) {
 
   return (
     <>
-      <group position={[px, CENTER_HEIGHT, pz]} rotation={[0, ry, 0]}>
+      <group position={[px, centerY, pz]} rotation={[0, ry, 0]}>
         <mesh material={materials.frame} position={[0, 0, spec.frameD / 2 - 0.004]}>
           <boxGeometry args={[fw, fh, spec.frameD]} />
         </mesh>
@@ -62,7 +61,7 @@ export default function Hang({ room, placement, rec, spec, lit }: HangProps) {
         </mesh>
         <Hotspot width={fw} height={fh} position={[0, 0, spec.frameD + 0.02]} userData={{ type: "art", rec }} />
       </group>
-      {lit && <ArtLighting room={room} spec={spec} px={px} pz={pz} n={n} materials={materials} />}
+      {lit && <ArtLighting room={room} spec={spec} px={px} pz={pz} centerY={centerY} n={n} materials={materials} />}
     </>
   );
 }
@@ -72,6 +71,7 @@ function ArtLighting({
   spec,
   px,
   pz,
+  centerY,
   n,
   materials,
 }: {
@@ -79,6 +79,7 @@ function ArtLighting({
   spec: SpaceSpec;
   px: number;
   pz: number;
+  centerY: number;
   n: [number, number, number];
   materials: ReturnType<typeof useMaterials>;
 }) {
@@ -97,9 +98,9 @@ function ArtLighting({
 
   useLayoutEffect(() => {
     if (!headRef.current) return;
-    headRef.current.lookAt(px, CENTER_HEIGHT, pz);
+    headRef.current.lookAt(px, centerY, pz);
     headRef.current.rotateX(Math.PI / 2);
-  }, [px, pz]);
+  }, [px, pz, centerY]);
 
   return (
     <>
@@ -113,7 +114,7 @@ function ArtLighting({
         decay={1.7}
         position={[lightX, room.h - 0.24, lightZ]}
       />
-      <object3D ref={targetRef} position={[px, CENTER_HEIGHT + 0.1, pz]} />
+      <object3D ref={targetRef} position={[px, centerY + 0.1, pz]} />
       {spec.track && (
         <>
           <mesh ref={headRef} material={materials.track} position={[lightX, room.h - 0.135, lightZ]}>

@@ -135,3 +135,39 @@ frontend renders "No visitors yet — be the first." for this case.
 particular deployment can't supply one on the list endpoint, the frontend falls back
 to `name` + `visited_at` for its React list key — but `id` should be sent whenever
 the backend has it.
+
+## `POST /specials/validate`
+
+Gates the Special Room, a fourth room (single print, placeholder for now) reachable
+only from The Hall's west doorway. The doorway is visually roped off and the
+frontend also blocks free-walking through it client-side — but that's only a UX
+nicety, **the server is the actual gate**: the frontend never lets a visitor into
+the room's scene state until this call returns 2xx, and does not cache a positive
+result across page loads (no token is stored — a refresh re-locks the room).
+
+**Request**
+
+```jsonc
+{ "token": "whatever-the-visitor-typed" }
+```
+
+**200 OK** — `data: null`. Any 2xx unlocks the room; the frontend does not read
+anything from `data` for this endpoint, so `null` is fine.
+
+**Error responses** — any non-2xx should return the envelope with `data: null` and a
+`message` suitable to show the visitor directly (e.g. "That token isn't valid.");
+unlike `POST /guests`, this `message` **is** shown in the gate's UI, not just logged.
+Expected cases: `400` (missing/empty `token`), `401`/`403` (token doesn't validate),
+`429` (rate limited).
+
+**Behavioural notes specific to this endpoint:**
+- Unlike `POST /guests`, this call **is awaited** — the gate's "unlock" button stays
+  in a loading state until the response comes back, and the room only opens on 2xx.
+  A slow/offline backend leaves the room locked with a visible error, which is the
+  intended behavior here (this is the one place in the app where blocking on the
+  network is correct, not a bug to optimistically route around).
+- The frontend's 8s client-side timeout (`AbortSignal.timeout`) surfaces as a
+  generic "Could not validate that token." if the server hangs.
+- Tokens are presumably meant to be single-use or rate-limited server-side — the
+  frontend has no lockout/retry-limit logic of its own and will happily resubmit
+  on every click.

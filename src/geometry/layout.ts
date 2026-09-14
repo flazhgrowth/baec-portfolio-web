@@ -6,6 +6,11 @@ export const WALL_THICKNESS = 0.26;
 /** Camera eye height, metres — constant, never varies by room. */
 export const EYE_HEIGHT = 1.62;
 
+/** Standard hung-picture centre height, metres. A placement's `v` offsets from
+ * this; shared by compileSpace (ArtRecord.cy) and Hang.tsx so the two never
+ * drift apart. */
+export const CENTER_HEIGHT = 1.53;
+
 interface WallOrientation {
   /** mesh.rotation.y for the extruded wall geometry */
   rot: number;

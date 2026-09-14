@@ -59,7 +59,7 @@ const raw: SpaceSpec = {
     {
       id: "h",
       name: "The Hall",
-      sub: "Under the skylight, after hours",
+      sub: "The Hall showcase",
       c: [0, 0],
       s: [16, 16],
       h: 6.8,
@@ -67,11 +67,19 @@ const raw: SpaceSpec = {
       home: [0, 7.2],
       partition: { c: [0, 0.8], s: [8.0, 0.46], h: 3.6 },
       art: [
-        { k: "p2", wall: "P+", u: -1.4, w: 2.95 },
+        // w scaled to 80% of its original 2.95m hang width; height still derives
+        // from artworks.ts's declared `ar` for p2, so the print's proportions hold.
+        { k: "p2", wall: "P+", u: -1.4, w: 1.5 },
         { k: "x1", wall: "P+", u: 2.7, w: 1.2 },
         { k: "x2", wall: "P-", u: 0, w: 1.4 },
-        { k: "p1", wall: "W", u: -2.8, w: 2.55 },
+        { k: "p1", wall: "W", u: -2.8, w: 1.8, v: 0.6},
         { k: "x3", wall: "W", u: 3.4, w: 1.5 },
+        // A vertical trio left of x3 (toward the wall's far corner): stacked mainly
+        // by height (v), with only a slight rightward creep in u as it climbs —
+        // not a diagonal, just enough offset that it doesn't read as one column.
+        { k: "x7", wall: "W", u: 5.3, w: 0.65, v: -0.85 },
+        { k: "x8", wall: "W", u: 6.5, w: 0.65, v: 0 },
+        { k: "x9", wall: "W", u: 5.7, w: 0.65, v: 0.85 },
         { k: "x4", wall: "S", u: 4.8, w: 1.1 },
       ],
     },
@@ -105,11 +113,25 @@ const raw: SpaceSpec = {
         { k: "x2", wall: "N", u: 0, w: 1.2 },
       ],
     },
+    {
+      id: "sp",
+      name: "Special Room",
+      sub: "By invitation only",
+      c: [-17.5, 0],
+      s: [9, 9],
+      h: 4.2,
+      home: [-14.0, 0],
+      // Single hero print on the far wall, facing a visitor as they come through
+      // the doorway — see controller/gatedRoom.ts for the token-gate that blocks
+      // this room's doorway (h's W wall) until POST /specials/validate returns 2xx.
+      art: [{ k: "sp1", wall: "W", u: 0, w: 1.6 }],
+    },
   ],
 
   links: [
     { a: "h", b: "n", axis: "z", at: 0, rev: true },
     { a: "h", b: "e", axis: "x", at: 0 },
+    { a: "sp", b: "h", axis: "x", at: 0 },
   ],
 
   start: { room: "h", pos: [1.4, 8.6], yaw: -0.14 },

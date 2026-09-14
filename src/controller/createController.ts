@@ -5,6 +5,7 @@ import { findPath } from "@/geometry/graph";
 import { hitOf, pick, tooltipTextFor } from "@/controller/picking";
 import { makePathTween, makeYawTween, type PositionTween, type YawTween } from "@/controller/motion";
 import { positionTooltip } from "@/controller/tooltipNode";
+import { SPECIAL_ROOM_ID, isInGatedZone } from "@/controller/gatedRoom";
 import type { GalleryStore } from "@/store/galleryStore";
 import type { ArtRecord, CompiledSpace, DoorRecord } from "@/space/types";
 
@@ -15,6 +16,7 @@ export interface Controller {
   travel(door: DoorRecord, after?: () => void): void;
   gotoRoom(id: string): void;
   enter(): void;
+  unlockSpecial(): void;
   bindInput(dom: HTMLElement): () => void;
   dispose(): void;
 }
@@ -72,6 +74,12 @@ export function createController({ space, camera, scene, store }: ControllerOpti
   const fwd = new THREE.Vector3();
   const sid = new THREE.Vector3();
   const timers = new Set<ReturnType<typeof setTimeout>>();
+
+  /** Where the visitor was standing (and facing) the last time they left each
+   * room, keyed by room id. `travel()` writes this on the way out and reads it
+   * on the way back in, so leaving a room and returning resumes from the same
+   * spot instead of always re-landing on the room's fixed `home` point. */
+  const roomMemory = new Map<string, { pos: [number, number]; yaw: number }>();
 
   function setCursor(cursor: string) {
     if (dom) dom.style.cursor = cursor;
@@ -140,16 +148,26 @@ export function createController({ space, camera, scene, store }: ControllerOpti
   }
 
   function travel(door: DoorRecord, after?: () => void) {
+    if (door.to === SPECIAL_ROOM_ID && !store.getState().specialUnlocked) {
+      store.setState({ specialGateOpen: true });
+      return;
+    }
+    // Remember where we're standing in the room we're leaving before anything
+    // else changes state.pos/yaw, so a later return trip can resume here.
+    roomMemory.set(state.room, { pos: [state.pos.x, state.pos.z], yaw: state.yaw });
+
     state.mode = "travel";
     state.focus = null;
     store.setState({ mode: "travel", caption: null, hint: "hidden" });
     const to = space.roomById[door.to];
+    const remembered = roomMemory.get(to.id);
     const hp = homeOf(to);
-    const stand: [number, number] = [
-      hp[0] * 0.72 + door.thru[0] * 0.28,
-      hp[1] * 0.72 + door.thru[1] * 0.28,
-    ];
-    const endYaw = yawToward(to.c[0] - stand[0] || 0.001, to.c[1] - stand[1] || 0.001);
+    const stand: [number, number] = remembered
+      ? remembered.pos
+      : [hp[0] * 0.72 + door.thru[0] * 0.28, hp[1] * 0.72 + door.thru[1] * 0.28];
+    const endYaw = remembered
+      ? remembered.yaw
+      : yawToward(to.c[0] - stand[0] || 0.001, to.c[1] - stand[1] || 0.001);
     startPath(
       [[state.pos.x, state.pos.z], door.entry, door.mid, door.thru, stand],
       endYaw,
@@ -158,7 +176,9 @@ export function createController({ space, camera, scene, store }: ControllerOpti
       () => {
         state.mode = "free";
         store.setState({ mode: "free", hint: "shown" });
-        startYaw(heroYaw(door.to), 1100);
+        // Only auto-face the hero print on a first visit — a remembered return
+        // should keep the exact look direction the visitor left with.
+        if (!remembered) startYaw(heroYaw(door.to), 1100);
         after?.();
       },
       true,
@@ -167,6 +187,10 @@ export function createController({ space, camera, scene, store }: ControllerOpti
   }
 
   function gotoRoom(id: string) {
+    if (id === SPECIAL_ROOM_ID && !store.getState().specialUnlocked) {
+      store.setState({ specialGateOpen: true });
+      return;
+    }
     if (id === state.room || state.mode === "travel") return;
     const hops = findPath(space.adjacency, state.room, id);
     if (!hops || !hops.length) {
@@ -208,6 +232,13 @@ export function createController({ space, camera, scene, store }: ControllerOpti
     );
     schedule(() => store.setState({ hint: "shown" }), 2000);
     schedule(() => store.setState({ hint: "hidden" }), 13000);
+  }
+
+  /** Marks the token gate passed and closes its modal — called by SpecialGate.tsx
+   * once POST /specials/validate returns 2xx. Doesn't travel by itself; the caller
+   * follows up with gotoRoom(SPECIAL_ROOM_ID), which now passes the check above. */
+  function unlockSpecial() {
+    store.setState({ specialUnlocked: true, specialGateOpen: false });
   }
 
   function onPointerDown(e: PointerEvent) {
@@ -367,8 +398,13 @@ export function createController({ space, camera, scene, store }: ControllerOpti
         sid.set(Math.cos(state.yaw), 0, -Math.sin(state.yaw));
         const nx = state.pos.x + (fwd.x * f + sid.x * s) * sp;
         const nz = state.pos.z + (fwd.z * f + sid.z * s) * sp;
-        if (inBounds(space.bounds, nx, state.pos.z)) state.pos.x = nx;
-        if (inBounds(space.bounds, state.pos.x, nz)) state.pos.z = nz;
+        const gateLocked = !store.getState().specialUnlocked;
+        if (inBounds(space.bounds, nx, state.pos.z) && !(gateLocked && isInGatedZone(space, nx, state.pos.z))) {
+          state.pos.x = nx;
+        }
+        if (inBounds(space.bounds, state.pos.x, nz) && !(gateLocked && isInGatedZone(space, state.pos.x, nz))) {
+          state.pos.z = nz;
+        }
       }
     }
 
@@ -396,5 +432,5 @@ export function createController({ space, camera, scene, store }: ControllerOpti
     }
   }
 
-  return { tick, approach, stepBack, travel, gotoRoom, enter, bindInput, dispose };
+  return { tick, approach, stepBack, travel, gotoRoom, enter, unlockSpecial, bindInput, dispose };
 }

@@ -1,5 +1,5 @@
 import { ARTWORKS } from "@/space/artworks";
-import { WALL, WALL_THICKNESS, innerPlane, resolveArtPlacement } from "@/geometry/layout";
+import { CENTER_HEIGHT, WALL, WALL_THICKNESS, innerPlane, resolveArtPlacement } from "@/geometry/layout";
 import { yawToward } from "@/geometry/math";
 import type {
   AABB,
@@ -111,8 +111,9 @@ export function compileSpace(spec: SpaceSpec): CompiledSpace {
         meta: src.meta,
         note: src.note,
         view: [px + n[0] * back, pz + n[2] * back],
-        cy: 1.53,
+        cy: CENTER_HEIGHT + (placement.v ?? 0),
         yaw: yawToward(-n[0], -n[2]),
+        artwork: src,
       };
       artRecords.push(rec);
       roomRecords.push(rec);

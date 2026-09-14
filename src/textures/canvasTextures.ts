@@ -73,6 +73,38 @@ export function plaqueTexture(title: string, meta: string, pal: PlaquePalette): 
   });
 }
 
+/** Hazard-tape strip hung across the Special Room's doorway while it's locked —
+ * see scene/GateRibbon.tsx. Repeats horizontally so one strip geometry can span
+ * the doorway at any width. */
+export function ribbonTexture(): THREE.CanvasTexture {
+  return cached("ribbon", () => {
+    const w = 256;
+    const h = 64;
+    const cv = document.createElement("canvas");
+    cv.width = w;
+    cv.height = h;
+    const g = cv.getContext("2d")!;
+    g.fillStyle = "#171412";
+    g.fillRect(0, 0, w, h);
+    g.fillStyle = "#e0a83c";
+    const stripe = 30;
+    for (let x = -h; x < w + h; x += stripe * 2) {
+      g.beginPath();
+      g.moveTo(x, 0);
+      g.lineTo(x + h, h);
+      g.lineTo(x + h + stripe, h);
+      g.lineTo(x + stripe, 0);
+      g.closePath();
+      g.fill();
+    }
+    const t = new THREE.CanvasTexture(cv);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.wrapS = THREE.RepeatWrapping;
+    t.repeat.set(2.4, 1);
+    return t;
+  });
+}
+
 export function skyPaneTexture(a: string, b: string): THREE.CanvasTexture {
   return cached(`sky:${a}:${b}`, () => {
     const n = 256;
