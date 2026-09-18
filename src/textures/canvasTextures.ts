@@ -73,34 +73,55 @@ export function plaqueTexture(title: string, meta: string, pal: PlaquePalette): 
   });
 }
 
-/** Hazard-tape strip hung across the Special Room's doorway while it's locked —
- * see scene/GateRibbon.tsx. Repeats horizontally so one strip geometry can span
- * the doorway at any width. */
-export function ribbonTexture(): THREE.CanvasTexture {
-  return cached("ribbon", () => {
-    const w = 256;
-    const h = 64;
+/** Drawn curtain hung across the Special Room's doorway while it's locked — see
+ * scene/GateVeil.tsx. A single arch-shaped panel fills the whole opening (not a
+ * repeating strip), so the canvas is drawn once at the doorway's own aspect. */
+export function veilTexture(): THREE.CanvasTexture {
+  return cached("veil", () => {
+    const w = 512;
+    const h = 768;
     const cv = document.createElement("canvas");
     cv.width = w;
     cv.height = h;
     const g = cv.getContext("2d")!;
-    g.fillStyle = "#171412";
+
+    g.fillStyle = "#2a1418";
     g.fillRect(0, 0, w, h);
-    g.fillStyle = "#e0a83c";
-    const stripe = 30;
-    for (let x = -h; x < w + h; x += stripe * 2) {
-      g.beginPath();
-      g.moveTo(x, 0);
-      g.lineTo(x + h, h);
-      g.lineTo(x + h + stripe, h);
-      g.lineTo(x + stripe, 0);
-      g.closePath();
-      g.fill();
+
+    // vertical fold shading — alternating soft light/dark bands read as draped fabric
+    const folds = 14;
+    const foldW = w / folds;
+    for (let i = 0; i < folds; i++) {
+      const x = i * foldW;
+      const grad = g.createLinearGradient(x, 0, x + foldW, 0);
+      grad.addColorStop(0, "rgba(0,0,0,0.32)");
+      grad.addColorStop(0.5, "rgba(255,255,255,0.07)");
+      grad.addColorStop(1, "rgba(0,0,0,0.32)");
+      g.fillStyle = grad;
+      g.fillRect(x, 0, foldW, h);
     }
+
+    // darker valance along the top, vignette toward the floor
+    g.fillStyle = "rgba(0,0,0,0.28)";
+    g.fillRect(0, 0, w, h * 0.07);
+    const vg = g.createLinearGradient(0, h * 0.55, 0, h);
+    vg.addColorStop(0, "rgba(0,0,0,0)");
+    vg.addColorStop(1, "rgba(0,0,0,0.4)");
+    g.fillStyle = vg;
+    g.fillRect(0, h * 0.55, w, h * 0.45);
+
+    g.textAlign = "center";
+    g.textBaseline = "middle";
+    g.fillStyle = "rgba(201,167,105,0.85)";
+    g.font = '400 30px Georgia, "Times New Roman", serif';
+    g.fillText("BY INVITATION ONLY", w / 2, h * 0.5);
+    g.font = "400 16px ui-monospace, SFMono-Regular, Menlo, monospace";
+    g.fillStyle = "rgba(201,167,105,0.55)";
+    g.fillText("· THE AIMER ·", w / 2, h * 0.5 + 34);
+
     const t = new THREE.CanvasTexture(cv);
     t.colorSpace = THREE.SRGBColorSpace;
-    t.wrapS = THREE.RepeatWrapping;
-    t.repeat.set(2.4, 1);
+    t.anisotropy = 8;
     return t;
   });
 }

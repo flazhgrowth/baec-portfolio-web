@@ -3,7 +3,7 @@ import Room from "@/scene/Room";
 import Passage from "@/scene/Passage";
 import Hotspot from "@/scene/Hotspot";
 import Hang from "@/scene/Hang";
-import GateRibbon from "@/scene/GateRibbon";
+import GateVeil from "@/scene/GateVeil";
 import { MaterialsProvider, useCreateMaterials } from "@/scene/useMaterials";
 import type { CompiledSpace } from "@/space/types";
 
@@ -38,7 +38,7 @@ export default function Space({ compiled }: { compiled: CompiledSpace }) {
         />
       ))}
 
-      <GateRibbon compiled={compiled} />
+      <GateVeil compiled={compiled} />
 
       {rooms.map((room) =>
         room.art.map((placement, i) => (
