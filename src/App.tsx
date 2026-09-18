@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import GalleryCanvas from "@/scene/GalleryCanvas";
 import Overlay from "@/overlay/Overlay";
 import { GalleryStoreContext } from "@/store/GalleryStoreContext";
@@ -32,23 +32,36 @@ export default function App() {
     return onPhotosSettled(() => store.setState({ assetsReady: true }));
   }, [store]);
 
+  const gateStyle: CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+    height: "100vh",
+    padding: 40,
+    textAlign: "center",
+    fontFamily: "var(--font-sans)",
+    fontSize: 15,
+    lineHeight: 1.6,
+    opacity: 0.75,
+  };
+
+  // Checked before the WebGL gate below — a phone is the wrong device
+  // regardless of what its browser supports, and it's the more useful message
+  // to show. This variant is not built for touch/small-screen navigation.
+  if (profile === "touch") {
+    return (
+      <div style={gateStyle}>
+        This gallery is built for a desktop browser — mouse look, WASD walking, and
+        full-size photographs don&apos;t translate to a phone. Please revisit on a
+        larger screen.
+      </div>
+    );
+  }
+
   if (!webglOk) {
     return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          width: "100%",
-          height: "100vh",
-          padding: 40,
-          textAlign: "center",
-          fontFamily: "var(--font-sans)",
-          fontSize: 15,
-          lineHeight: 1.6,
-          opacity: 0.75,
-        }}
-      >
+      <div style={gateStyle}>
         This gallery needs WebGL, which this browser doesn&apos;t support. Try a recent
         version of Chrome, Firefox, Safari, or Edge.
       </div>
