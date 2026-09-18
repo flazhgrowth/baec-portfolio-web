@@ -8,9 +8,9 @@ import type { SpaceSpec } from "@/space/types";
  * annotating only the `Object.freeze(...)` call's result would let TS infer `T`
  * from the literal alone and widen `fog` to `number[]`. */
 const raw: SpaceSpec = {
-  label: "Nocturne",
+  label: "Collexion #1",
   blurb:
-    "The tall hall after hours — a cold skylight overhead, warm pools below, arches into the dark.",
+    "The gallery of Baeclatant. Collexion #1. Four rooms. Explore",
   bg: "#060607",
   exposure: 1.26,
   fog: [15, 64],
@@ -59,7 +59,7 @@ const raw: SpaceSpec = {
     {
       id: "h",
       name: "The Hall",
-      sub: "The Hall showcase",
+      sub: "Collexion #1 Main Hall",
       c: [0, 0],
       s: [16, 16],
       h: 6.8,
@@ -88,9 +88,6 @@ const raw: SpaceSpec = {
         { k: "x8", wall: "W", u: 7.0, w: 1.2, v: -0.2, lit: true, litOffset: -1.7 }, // 4
         { k: "x9", wall: "W", u: 5.5, w: 0.85, v: 1.0, lit: false },
 
-        { k: "x4", wall: "S", u: 4.8, w: 1.1, lit: false},
-
-
         { k: "x10_1", wall: "N", u: -6, w: 0.7, v: -0.7, lit: false},
         { k: "x10_2", wall: "N", u: -6, w: 0.7, v: 0.1, lit: false},
         { k: "x10_3", wall: "N", u: -6, w: 0.7, v: 0.9, lit: false},
@@ -107,37 +104,51 @@ const raw: SpaceSpec = {
     {
       id: "n",
       name: "North Room",
-      sub: "Small works",
+      sub: "The room that pass through years..",
       c: [0, -17.5],
       s: [9, 9],
       h: 4.2,
       home: [0, -14.0],
       art: [
-        { k: "p3", wall: "N", u: 0, w: 2.35 },
-        { k: "x5", wall: "N", u: -2.9, w: 0.9 },
-        { k: "x3", wall: "W", u: 0, w: 1.4 },
-        { k: "x4", wall: "E", u: 0, w: 1.1 },
+        { k: "n1", wall: "N", u: 0, w: 2.35 }, // 3:2
+
+        { k: "n2", wall: "W", u: 2, w: 1, lit: true, litOffset: -0.95}, // 3:2
+        { k: "n3", wall: "W", u: 0, w: 1, lit: false}, // 2:3
+        { k: "n4", wall: "W", u: -2, w: 1, lit: true, litOffset: 0.95}, // 2:3
+
+        { k: "n5", wall: "E", u: 2.5, w: 1, v: 0, lit: true, litOffset: -0.8}, // 2:3
+        { k: "n6", wall: "E", u: 1, w: 1, lit: false,}, // 3:2
+        { k: "n7", wall: "E", u: -1, w: 1, lit: false}, // 2:3
+        { k: "n8", wall: "E", u: -2.5, w: 1, v: -0.5, lit: true, litOffset: 0.8}, // 2:3
       ],
     },
     {
       id: "e",
       name: "East Room",
-      sub: "Work on paper",
+      sub: "Across everything. The stories",
       c: [17.5, 0],
       s: [9, 9],
       h: 4.2,
       home: [14.0, 0],
       art: [
-        { k: "x6", wall: "E", u: -1.7, w: 1.6 },
-        { k: "x5", wall: "E", u: 1.7, w: 1.15 },
-        { k: "x1", wall: "S", u: 0, w: 1.5 },
-        { k: "x2", wall: "N", u: 0, w: 1.2 },
+        { k: "x6", wall: "E", u: 0, w: 1.3, lit: false},
+        { k: "x5", wall: "E", u: 2, w: 1.15, lit: true, litOffset: -0.95}, // 1
+        { k: "x4", wall: "E", u: -2, w: 1.15, lit: true, litOffset: 0.95}, // 2
+
+        { k: "e1", wall: "N", u: -0.98, v: 0.5, w: 1.2, lit: true, litOffset: 0.8}, // 3
+        { k: "e2", wall: "N", u: 0.98,  v: -0.5, w: 1.2, lit: false},
+
+        { k: "e3", wall: "S", u: 3, w: 1, lit: true, litOffset: -0.7},
+        { k: "e4", wall: "S", u: 1.5, w: 1, lit: false },
+        { k: "e5", wall: "S", u: 0, w: 1, lit: true },
+        { k: "e6", wall: "S", u: -1.5, w: 1, lit: false },
+        { k: "e7", wall: "S", u: -3, w: 1, lit: true, litOffset: 0.7},
       ],
     },
     {
       id: "sp",
-      name: "Special Room",
-      sub: "By invitation only",
+      name: "The Aimer",
+      sub: "By invitation only..",
       c: [-17.5, 0],
       s: [9, 9],
       h: 4.2,

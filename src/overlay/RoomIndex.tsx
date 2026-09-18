@@ -40,9 +40,27 @@ function GuestbookButton() {
       style={{ opacity }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-      onClick={() => store.setState({ guestbookOpen: !open })}
+      onClick={() => store.setState({ guestbookOpen: !open, messageOpen: false })}
     >
       Guestbook
+    </button>
+  );
+}
+
+function MessageButton() {
+  const store = useGalleryStore();
+  const open = useGallery((s) => s.messageOpen);
+  const [hover, setHover] = useState(false);
+  const opacity = open ? 1 : hover ? 0.8 : 0.38;
+  return (
+    <button
+      className={styles.indexButton}
+      style={{ opacity }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      onClick={() => store.setState({ messageOpen: !open, guestbookOpen: false })}
+    >
+      Message
     </button>
   );
 }
@@ -62,6 +80,7 @@ export default function RoomIndex({ compiled }: { compiled: CompiledSpace }) {
         />
       ))}
       <GuestbookButton />
+      <MessageButton />
     </div>
   );
 }

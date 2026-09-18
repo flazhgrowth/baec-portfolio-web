@@ -19,6 +19,13 @@ export interface GalleryState {
   assetsReady: boolean;
   guestbookOpen: boolean;
   visitorName: string;
+  /** Whether a POST /guests record is known to exist for this visit_id — true once
+   * TitleCard's real submit fires it, or once MessageBoard registers a fallback
+   * (random-named) one for a visitor who used "Skip". POST /messages requires this,
+   * so MessageBoard checks it before sending. */
+  visitorLogged: boolean;
+  /** Whether the "leave a message" panel is open — see overlay/MessageBoard.tsx. */
+  messageOpen: boolean;
   /** Whether the Special Room's token gate has been passed this session. Doubles
    * as the walking-collision gate — see controller/gatedRoom.ts. */
   specialUnlocked: boolean;
@@ -45,6 +52,8 @@ export function createGalleryStore(initial: Pick<GalleryState, "roomId" | "profi
     assetsReady: false,
     guestbookOpen: false,
     visitorName: "",
+    visitorLogged: false,
+    messageOpen: false,
     specialUnlocked: false,
     specialGateOpen: false,
   }));

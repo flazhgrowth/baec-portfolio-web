@@ -383,6 +383,54 @@
   font-family: var(--font-sans);
 }
 
+/* message panel */
+.messageInput {
+  width: 100%;
+  min-height: 90px;
+  resize: vertical;
+  background: transparent;
+  border: 1px solid var(--ui-hairline);
+  color: var(--ui-ink);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 10px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+.messageInput:focus {
+  border-color: rgba(241, 237, 229, 0.5);
+}
+.messageInput::placeholder {
+  color: rgba(241, 237, 229, 0.35);
+}
+.messageSubmit {
+  align-self: flex-end;
+  appearance: none;
+  cursor: pointer;
+  background: none;
+  color: var(--ui-ink);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  border: 1px solid var(--ui-hairline);
+  transition:
+    background 0.3s,
+    border-color 0.3s,
+    opacity 0.3s;
+}
+.messageSubmit:hover:not(:disabled),
+.messageSubmit:focus-visible:not(:disabled) {
+  background: rgba(241, 237, 229, 0.1);
+  border-color: rgba(241, 237, 229, 0.66);
+}
+.messageSubmit:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
 /* special-room token gate */
 .gateBackdrop {
   position: absolute;

@@ -28,6 +28,14 @@ interface ControllerOptions {
   store: GalleryStore;
 }
 
+// Matches compileSpace.ts's room-bounds inset exactly (the AABB every room's
+// free-walk area is clipped to). Used below to keep a first-time arrival point
+// safely inside that AABB, not still in the doorway's narrower corridor box —
+// otherwise strafing (no forward component) right on arrival can hit the
+// corridor's tight z-limit and appear to "stick" until some other tween
+// (approach()) relocates the camera into the room proper.
+const ROOM_WALK_INSET = 0.6;
+
 const DRAG_THRESHOLD = 5;
 const CLICK_THRESHOLD_DESKTOP = 6;
 const CLICK_THRESHOLD_TOUCH = 10;
@@ -75,11 +83,14 @@ export function createController({ space, camera, scene, store }: ControllerOpti
   const sid = new THREE.Vector3();
   const timers = new Set<ReturnType<typeof setTimeout>>();
 
-  /** Where the visitor was standing (and facing) the last time they left each
-   * room, keyed by room id. `travel()` writes this on the way out and reads it
-   * on the way back in, so leaving a room and returning resumes from the same
-   * spot instead of always re-landing on the room's fixed `home` point. */
-  const roomMemory = new Map<string, { pos: [number, number]; yaw: number }>();
+  /** Where the visitor was standing the last time they left each room, keyed
+   * by room id. `travel()` writes this on the way out and reads it on the way
+   * back in, so leaving a room and returning resumes from the same spot
+   * instead of always re-landing on the room's fixed `home` point. Facing is
+   * NOT remembered here — arrival yaw is always computed fresh from the
+   * direction of travel (see `travel()`'s `endYaw`), not the old departure
+   * yaw, so returning to a room means facing into it, not back at the door. */
+  const roomMemory = new Map<string, { pos: [number, number] }>();
 
   function setCursor(cursor: string) {
     if (dom) dom.style.cursor = cursor;
@@ -154,7 +165,7 @@ export function createController({ space, camera, scene, store }: ControllerOpti
     }
     // Remember where we're standing in the room we're leaving before anything
     // else changes state.pos/yaw, so a later return trip can resume here.
-    roomMemory.set(state.room, { pos: [state.pos.x, state.pos.z], yaw: state.yaw });
+    roomMemory.set(state.room, { pos: [state.pos.x, state.pos.z] });
 
     state.mode = "travel";
     state.focus = null;
@@ -162,11 +173,26 @@ export function createController({ space, camera, scene, store }: ControllerOpti
     const to = space.roomById[door.to];
     const remembered = roomMemory.get(to.id);
     const hp = homeOf(to);
+    // Clamp into the room's own walkable AABB (not the door's corridor box) so
+    // a first-time arrival never lands in the trap described above — a no-op
+    // for any room where the 0.72/0.28 blend already lands well clear of the
+    // doorway, and a small pull-in for a room whose home point sits close to
+    // its own door (East Room, North Room, Special Room all do).
+    const clamp = (v: number, c: number, half: number) =>
+      Math.max(c - half + ROOM_WALK_INSET, Math.min(c + half - ROOM_WALK_INSET, v));
     const stand: [number, number] = remembered
       ? remembered.pos
-      : [hp[0] * 0.72 + door.thru[0] * 0.28, hp[1] * 0.72 + door.thru[1] * 0.28];
+      : [
+          clamp(hp[0] * 0.72 + door.thru[0] * 0.28, to.c[0], to.s[0] / 2),
+          clamp(hp[1] * 0.72 + door.thru[1] * 0.28, to.c[1], to.s[1] / 2),
+        ];
+    // Face the direction of travel on arrival, not the yaw last held while
+    // standing here before leaving — re-entering a room from a door you just
+    // walked back through should mean facing further into the room (away from
+    // that door), the same way a first-time entry faces the room's centre,
+    // not spin around to face the door itself.
     const endYaw = remembered
-      ? remembered.yaw
+      ? yawToward(stand[0] - door.thru[0] || 0.001, stand[1] - door.thru[1] || 0.001)
       : yawToward(to.c[0] - stand[0] || 0.001, to.c[1] - stand[1] || 0.001);
     startPath(
       [[state.pos.x, state.pos.z], door.entry, door.mid, door.thru, stand],
@@ -176,8 +202,8 @@ export function createController({ space, camera, scene, store }: ControllerOpti
       () => {
         state.mode = "free";
         store.setState({ mode: "free", hint: "shown" });
-        // Only auto-face the hero print on a first visit — a remembered return
-        // should keep the exact look direction the visitor left with.
+        // Only auto-face the hero print on a first visit — a remembered
+        // return already ends facing into the room from `endYaw` above.
         if (!remembered) startYaw(heroYaw(door.to), 1100);
         after?.();
       },

@@ -136,6 +136,49 @@ particular deployment can't supply one on the list endpoint, the frontend falls 
 to `name` + `visited_at` for its React list key — but `id` should be sent whenever
 the backend has it.
 
+## `POST /messages`
+
+Lets a visitor leave a freeform message, independent of the name-gate guestbook entry.
+Opened from a "Message" button next to the guestbook button in the in-gallery overlay.
+
+**Request**
+
+```jsonc
+{
+  "visit_id": "3f1c9e2a-8b7e-4a2b-9c1d-6e0f8a2b7c3d", // same client-generated UUID as POST /guests
+  "msg": "Loved the East Room."
+}
+```
+
+**201 Created** — `data: null`.
+
+**Error responses** — envelope with `data: null` and a `message` shown directly in the
+panel's UI (unlike `POST /guests`, this one **is** surfaced to the visitor, not just
+logged). Expected cases: `400` (missing/empty `msg`), a not-found-style status for a
+`visit_id` with no matching `POST /guests` record, a conflict-style status if a message
+already exists for this `visit_id`, `429` (rate limited).
+
+**Behavioural notes specific to this endpoint:**
+- **`visit_id` must already have a `POST /guests` record.** A visitor who used
+  "Skip — enter without signing the guestbook" never triggered that call, so the
+  frontend registers one with a randomly generated name immediately before the first
+  message send for that visit, rather than surfacing a "visit not found" error for
+  having skipped the name gate.
+- **One message per `visit_id`, enforced server-side.** The frontend does not check this
+  in advance (there's no `GET` for it) — it just submits and shows whatever error the
+  server returns if a second attempt is somehow made. It does keep a local, best-effort
+  `sessionStorage` flag after a successful send so the panel shows "already sent"
+  without another round trip in the same tab, but that flag is a UX convenience only,
+  not the actual constraint — the server is expected to reject a second message for the
+  same `visit_id` regardless of what the client thinks it knows.
+- **The frontend caps `msg` at 500 characters** as a UX convenience, not a control — same
+  posture as the `name` field on `POST /guests`: the server must independently validate
+  and length-cap it.
+- This call **is awaited** by the panel (unlike the optimistic `POST /guests`) — the
+  visitor is actively submitting from an open panel, so showing the real result (success
+  or the server's error message) is the right behavior here, the same posture as
+  `POST /specials/validate` below.
+
 ## `POST /specials/validate`
 
 Gates the Special Room, a fourth room (single print, placeholder for now) reachable

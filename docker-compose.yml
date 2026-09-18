@@ -1,0 +1,16 @@
+services:
+  web:
+    build:
+      context: .
+      args:
+        # Baked into the JS bundle at BUILD time (Vite inlines VITE_* vars) — not
+        # read at container start. Pulled from a .env file next to this compose file
+        # (docker compose loads that automatically for ${...} substitution); the
+        # same VITE_API_BASE_URL already used for local `vite dev` works here too.
+        # After changing it, `docker compose up -d --build` (a plain restart won't
+        # pick up the new value — it's already compiled into dist/).
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api/v1}
+    image: baec-portfolio-web:latest
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-8081}:80"

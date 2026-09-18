@@ -39,7 +39,7 @@ export default function TitleCard({ compiled }: { compiled: CompiledSpace }) {
     }
     setSubmitting(true);
     setError(null);
-    store.setState({ visitorName: trimmed });
+    store.setState({ visitorName: trimmed, visitorLogged: true });
     void submitVisitor(trimmed).catch((err: unknown) => {
       console.warn("[guestbook] failed to log visit", err);
     });
