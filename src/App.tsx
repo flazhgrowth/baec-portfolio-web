@@ -9,6 +9,7 @@ import { NOCTURNE_COMPILED } from "@/space/compiled";
 import { ARTWORKS } from "@/space/artworks";
 import { isRealArtwork } from "@/space/types";
 import { onPhotosSettled, preloadPhotoTextures } from "@/textures/photoTextures";
+import { fetchNotesSummary } from "@/api/notes";
 
 export default function App() {
   const profile = useInputProfile();
@@ -30,6 +31,14 @@ export default function App() {
       .map((a) => a.src);
     preloadPhotoTextures(sources);
     return onPhotosSettled(() => store.setState({ assetsReady: true }));
+  }, [store]);
+
+  useEffect(() => {
+    fetchNotesSummary()
+      .then((artKeys) => store.setState({ notedArtKeys: artKeys }))
+      .catch(() => {
+        // best-effort — an outage here should only mean the frame cue doesn't show
+      });
   }, [store]);
 
   const gateStyle: CSSProperties = {

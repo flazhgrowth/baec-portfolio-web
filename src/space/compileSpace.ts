@@ -128,6 +128,7 @@ export function compileSpace(spec: SpaceSpec): CompiledSpace {
       const back = Math.max(2.05, placement.w * 1.42);
       const rec: ArtRecord = {
         room: r.id,
+        key: placement.k,
         title: src.title,
         meta: src.meta,
         note: src.note,

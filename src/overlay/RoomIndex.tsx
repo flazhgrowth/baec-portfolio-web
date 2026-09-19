@@ -40,7 +40,7 @@ function GuestbookButton() {
       style={{ opacity }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-      onClick={() => store.setState({ guestbookOpen: !open, messageOpen: false })}
+      onClick={() => store.setState({ guestbookOpen: !open, messageOpen: false, notesOpen: false })}
     >
       Guestbook
     </button>
@@ -58,7 +58,7 @@ function MessageButton() {
       style={{ opacity }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-      onClick={() => store.setState({ messageOpen: !open, guestbookOpen: false })}
+      onClick={() => store.setState({ messageOpen: !open, guestbookOpen: false, notesOpen: false })}
     >
       Message
     </button>

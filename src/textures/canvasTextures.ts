@@ -126,6 +126,48 @@ export function veilTexture(): THREE.CanvasTexture {
   });
 }
 
+/** A small post-it-yellow square with a folded bottom-right corner, used as a
+ * presence cue on a frame that has at least one note (see scene/Hang.tsx) — not
+ * content, so one shared cached texture covers every artwork. */
+export function postItTexture(): THREE.CanvasTexture {
+  return cached("postIt", () => {
+    const n = 128;
+    const cv = document.createElement("canvas");
+    cv.width = n;
+    cv.height = n;
+    const g = cv.getContext("2d")!;
+
+    g.fillStyle = "#e8c96a";
+    g.fillRect(0, 0, n, n);
+
+    // a thin darker edge all around, like a paper square laid on the frame
+    g.strokeStyle = "rgba(0,0,0,0.18)";
+    g.lineWidth = 3;
+    g.strokeRect(1.5, 1.5, n - 3, n - 3);
+
+    // folded bottom-right corner
+    const fold = n * 0.34;
+    g.fillStyle = "rgba(0,0,0,0.16)";
+    g.beginPath();
+    g.moveTo(n, n - fold);
+    g.lineTo(n, n);
+    g.lineTo(n - fold, n);
+    g.closePath();
+    g.fill();
+    g.fillStyle = "#d9b95a";
+    g.beginPath();
+    g.moveTo(n, n - fold);
+    g.lineTo(n - fold * 0.62, n - fold * 0.15);
+    g.lineTo(n - fold * 0.15, n - fold * 0.62);
+    g.closePath();
+    g.fill();
+
+    const t = new THREE.CanvasTexture(cv);
+    t.colorSpace = THREE.SRGBColorSpace;
+    return t;
+  });
+}
+
 export function skyPaneTexture(a: string, b: string): THREE.CanvasTexture {
   return cached(`sky:${a}:${b}`, () => {
     const n = 256;

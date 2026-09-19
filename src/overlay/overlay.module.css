@@ -180,6 +180,38 @@
   width: auto;
   height: auto;
 }
+.lightboxFrameWrap {
+  position: relative;
+}
+/* Leave-a-note action, styled as a small post-it stuck to the frame's corner —
+   echoes the in-scene cue (scene/Hang.tsx's postItTexture) rather than reading as
+   generic panel chrome. */
+.lightboxNoteBtn {
+  position: absolute;
+  right: -14px;
+  bottom: -14px;
+  appearance: none;
+  cursor: pointer;
+  background: #e8c96a;
+  color: #2a2010;
+  border: 0;
+  padding: 9px 14px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  transform: rotate(-3deg);
+  pointer-events: auto;
+  transition:
+    transform 0.25s,
+    box-shadow 0.25s;
+}
+.lightboxNoteBtn:hover,
+.lightboxNoteBtn:focus-visible {
+  transform: rotate(-3deg) translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.48);
+}
 
 /* veil (hard-cut teleport) */
 .veil {

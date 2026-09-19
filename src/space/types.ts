@@ -187,6 +187,9 @@ export interface DoorRecord {
 
 export interface ArtRecord {
   room: string;
+  /** the placement's key into the ARTWORKS table (ArtPlacement.k) — unique across the
+   * whole variant, so it doubles as the identifier notes/api's notes attach to. */
+  key: string;
   title: string;
   meta: string;
   note: string;

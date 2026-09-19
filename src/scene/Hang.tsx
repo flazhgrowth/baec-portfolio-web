@@ -2,7 +2,7 @@ import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { CENTER_HEIGHT, resolveArtPlacement } from "@/geometry/layout";
 import { ARTWORKS } from "@/space/artworks";
-import { placeholderTexture, plaqueTexture } from "@/textures/canvasTextures";
+import { placeholderTexture, plaqueTexture, postItTexture } from "@/textures/canvasTextures";
 import { readPhotoTexture } from "@/textures/photoTextures";
 import Hotspot from "@/scene/Hotspot";
 import { useMaterials } from "@/scene/useMaterials";
@@ -28,6 +28,7 @@ interface HangProps {
  * (which adds them to `scene`, not to the picture's own THREE.Group). */
 export default function Hang({ room, placement, rec, spec, lit }: HangProps) {
   const materials = useMaterials();
+  const hasNote = useGallery((s) => s.notedArtKeys.includes(placement.k));
   const src = ARTWORKS[placement.k];
   const h = placement.w / src.ar;
   const { px, pz, ry, n } = resolveArtPlacement(room, placement);
@@ -70,6 +71,12 @@ export default function Hang({ room, placement, rec, spec, lit }: HangProps) {
           <planeGeometry args={[0.33, 0.139]} />
           <meshStandardMaterial map={plaqueTex} roughness={0.95} />
         </mesh>
+        {hasNote && (
+          <mesh position={[fw / 2 - 0.075, fh / 2 - 0.075, spec.frameD + 0.006]} rotation={[0, 0, -0.06]}>
+            <planeGeometry args={[0.11, 0.11]} />
+            <meshStandardMaterial map={postItTexture()} roughness={0.9} />
+          </mesh>
+        )}
         <Hotspot width={fw} height={fh} position={[0, 0, spec.frameD + 0.02]} userData={{ type: "art", rec }} />
       </group>
       {lit && (

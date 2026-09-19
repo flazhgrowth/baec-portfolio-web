@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { isRealArtwork } from "@/space/types";
 import { useGallery } from "@/store/useGallery";
+import { useGalleryStore } from "@/store/GalleryStoreContext";
 import styles from "@/overlay/overlay.module.css";
 import type { ArtRecord, CompiledSpace } from "@/space/types";
 
@@ -35,7 +36,9 @@ function placeholderDataUri(label: string, ar: number, dark: boolean): string {
  * "art"`. Purely decorative, like CaptionPanel: pointer-events stay off so a
  * click anywhere still reaches the canvas's own click-to-step-back handling. */
 export default function Lightbox({ compiled }: { compiled: CompiledSpace }) {
+  const store = useGalleryStore();
   const caption = useGallery((s) => s.caption);
+  const hasNote = useGallery((s) => (caption ? s.notedArtKeys.includes(caption.key) : false));
   const visible = caption != null;
   const spec = compiled.spec;
 
@@ -61,10 +64,27 @@ export default function Lightbox({ compiled }: { compiled: CompiledSpace }) {
       style={{ opacity: visible ? 1 : 0, transform: visible ? "none" : "translateY(12px)" }}
     >
       {shown && (
-        <div className={styles.lightboxFrame} style={{ background: spec.frame }}>
-          <div className={styles.lightboxMat} style={{ background: spec.mat }}>
-            <img className={styles.lightboxImg} src={src} alt={shown.title} />
+        <div className={styles.lightboxFrameWrap}>
+          <div className={styles.lightboxFrame} style={{ background: spec.frame }}>
+            <div className={styles.lightboxMat} style={{ background: spec.mat }}>
+              <img className={styles.lightboxImg} src={src} alt={shown.title} />
+            </div>
           </div>
+          {caption && (
+            <button
+              className={styles.lightboxNoteBtn}
+              onClick={() =>
+                store.setState({
+                  notesOpen: true,
+                  notesArtKey: caption.key,
+                  guestbookOpen: false,
+                  messageOpen: false,
+                })
+              }
+            >
+              {hasNote ? "View notes" : "Leave a note"}
+            </button>
+          )}
         </div>
       )}
     </div>

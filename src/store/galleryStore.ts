@@ -31,6 +31,15 @@ export interface GalleryState {
   specialUnlocked: boolean;
   /** Whether the token-entry modal is open — see overlay/SpecialGate.tsx. */
   specialGateOpen: boolean;
+  /** Artwork keys (ArtRecord.key) known to have at least one note — populated once
+   * from GET /notes/summary at app load, appended to optimistically after a
+   * successful submit. Drives the post-it cue in scene/Hang.tsx. */
+  notedArtKeys: string[];
+  /** Whether the notes panel is open, and for which artwork — see
+   * overlay/NotesPanel.tsx. Kept independent of `caption` so the panel survives
+   * stepping back out of the caption view. */
+  notesOpen: boolean;
+  notesArtKey: string | null;
 }
 
 export type GalleryStore = ReturnType<typeof createGalleryStore>;
@@ -56,5 +65,8 @@ export function createGalleryStore(initial: Pick<GalleryState, "roomId" | "profi
     messageOpen: false,
     specialUnlocked: false,
     specialGateOpen: false,
+    notedArtKeys: [],
+    notesOpen: false,
+    notesArtKey: null,
   }));
 }

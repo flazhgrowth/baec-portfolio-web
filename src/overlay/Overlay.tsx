@@ -6,6 +6,7 @@ import CaptionPanel from "@/overlay/CaptionPanel";
 import Lightbox from "@/overlay/Lightbox";
 import Guestbook from "@/overlay/Guestbook";
 import MessageBoard from "@/overlay/MessageBoard";
+import NotesPanel from "@/overlay/NotesPanel";
 import SpecialGate from "@/overlay/SpecialGate";
 import TitleCard from "@/overlay/TitleCard";
 import Veil from "@/overlay/Veil";
@@ -25,6 +26,7 @@ export default function Overlay({ compiled }: { compiled: CompiledSpace }) {
       </div>
       <Guestbook />
       <MessageBoard />
+      <NotesPanel />
       <SpecialGate />
       <TitleCard compiled={compiled} />
       <Veil />

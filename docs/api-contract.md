@@ -179,6 +179,101 @@ already exists for this `visit_id`, `429` (rate limited).
   or the server's error message) is the right behavior here, the same posture as
   `POST /specials/validate` below.
 
+## `POST /notes`
+
+Lets a visitor leave a short, post-it-style note on a **specific artwork** — distinct
+from `POST /messages`, which is one freeform message for the whole visit. Opened from a
+"Leave a note" button in the artwork caption panel, so it's always tied to whichever
+piece the visitor is currently looking at.
+
+**Request**
+
+```jsonc
+{
+  "visit_id": "3f1c9e2a-8b7e-4a2b-9c1d-6e0f8a2b7c3d", // same client-generated UUID as POST /guests
+  "art_key": "p1", // opaque identifier for the artwork — the frontend's own internal
+                    // placement key; the backend doesn't need to know the gallery's
+                    // spatial layout, just store and return this string as given
+  "note": "This one stopped me in my tracks."
+}
+```
+
+**201 Created** — `data: null`.
+
+**Error responses** — envelope with `data: null` and a `message` shown directly in the
+panel's UI (same posture as `POST /messages`). Expected cases: `400` (missing `art_key`
+or empty `note`), a not-found-style status for a `visit_id` with no matching
+`POST /guests` record, a conflict-style status if a note already exists for this
+`(visit_id, art_key)` pair, `429` (rate limited).
+
+**Behavioural notes specific to this endpoint:**
+- **`visit_id` must already have a `POST /guests` record** — identical posture to
+  `POST /messages`: a visitor who used "Skip" never triggered that call, so the
+  frontend registers one (random name) before the first note send for that visit,
+  exactly as it already does before the first message send.
+- **One note per `(visit_id, art_key)` pair, enforced server-side — NOT one note per
+  visit.** This is the one place this endpoint differs from `POST /messages`: a visitor
+  may leave a note on as many different artworks as they like, just never twice on the
+  same one. Do not reuse `/messages`' "one total per visit" constraint here.
+- The frontend caps `note` at **240 characters** as a UX convenience, not a control —
+  shorter than `/messages`' 500-character cap since this is sized as a post-it, not a
+  letter. Same posture as every other length cap in this doc: the server must
+  independently validate and length-cap it.
+- Awaited by the panel, same as `POST /messages` and `POST /specials/validate` — the
+  visitor is actively submitting from an open panel, so the real result (success or the
+  server's error message) should show, not be swallowed.
+
+## `GET /notes`
+
+Lists notes left on one artwork, newest first. Fetched lazily the first time a visitor
+opens the notes panel for that artwork — never preloaded, so an outage here only
+degrades that one panel, same posture as `GET /guests`.
+
+**Query parameters**
+
+| Param     | Type   | Default | Notes                                             |
+| --------- | ------ | ------- | -------------------------------------------------- |
+| `art_key` | string | —       | Required. The same opaque key `POST /notes` was given. |
+| `size`    | number | 50      | Max entries to return.                             |
+| `cursor`  | string | —       | Opaque pagination cursor from a prior response.     |
+
+**200 OK** — `data`:
+
+```jsonc
+{
+  "notes": [
+    { "id": 7, "name": "Pradipta", "note": "This one stopped me in my tracks.", "left_at": "2026-09-12T10:00:00Z" }
+  ],
+  "pagination": {
+      "total": 3,
+      "cursor": null
+  }
+}
+```
+
+An artwork with no notes yet should return `data` of
+`{ "notes": [], "pagination": { "total": 0, "cursor": null } }`, not an error — the
+frontend renders "No notes yet — leave the first." for this case. As with
+`GET /guests`, `id` should be sent whenever the backend has it; the frontend falls back
+to `name` + `left_at` for its React list key otherwise.
+
+## `GET /notes/summary`
+
+Returns which artworks have at least one note, so the frontend can show a small visual
+cue on those frames **without opening every artwork's panel**. Unlike every other `GET`
+in this document, **this one is fetched once, unconditionally, on every page load** —
+not lazily on demand — so it needs to stay cheap (e.g. `SELECT DISTINCT art_key FROM
+notes`, or an equally cheap cached read). A slow or failed response here should only mean
+the cue silently doesn't show; the frontend never retries or blocks anything on it.
+
+**200 OK** — `data`:
+
+```jsonc
+{ "art_keys": ["p1", "sp1"] }
+```
+
+An empty gallery-wide result is `{ "art_keys": [] }`, not an error.
+
 ## `POST /specials/validate`
 
 Gates the Special Room, a fourth room (single print, placeholder for now) reachable
