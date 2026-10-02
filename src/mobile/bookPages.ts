@@ -1,7 +1,7 @@
 import { ARTWORKS } from "@/space/artworks";
 import { isRealArtwork, type RealArtwork } from "@/space/types";
 
-export const BOOK_TITLE = "Field Notes";
+export const BOOK_TITLE = "Collexion #1";
 
 /** First and last photograph of the book; everything else follows table order. */
 const FIRST = "x1";

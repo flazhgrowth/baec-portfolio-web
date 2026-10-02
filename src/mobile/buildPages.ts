@@ -29,7 +29,7 @@ export function buildPages(): HTMLElement[] {
 
   BOOK_PHOTOS.forEach((p, i) => {
     const page = el("div", `${s.page} ${s.paper}`);
-    const frame = el("div", s.photo);
+    const frame = el("div", p.ar < 1 ? `${s.photo} ${s.photoPortrait}` : s.photo);
     const img = el("img", s.img);
     img.alt = p.title || p.meta;
     img.decoding = "async";
