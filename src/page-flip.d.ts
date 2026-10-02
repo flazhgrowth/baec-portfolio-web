@@ -30,6 +30,7 @@ declare module "page-flip" {
     getPageCount(): number;
     flipNext(corner?: "top" | "bottom"): void;
     flipPrev(corner?: "top" | "bottom"): void;
+    flip(page: number, corner?: "top" | "bottom"): void;
     turnToPage(page: number): void;
     destroy(): void;
   }

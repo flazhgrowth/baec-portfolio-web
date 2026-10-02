@@ -44,7 +44,15 @@ export default function Book({ onClose }: { onClose: () => void }) {
       loadAround(pages, i, 3);
     });
 
+    // delegated: StPageFlip may move/clone page nodes, so no per-node listeners
+    const onClick = (e: MouseEvent) => {
+      const btn = (e.target as HTMLElement).closest<HTMLElement>("[data-goto]");
+      if (btn) flip.flip(Number(btn.dataset.goto));
+    };
+    host.addEventListener("click", onClick);
+
     return () => {
+      host.removeEventListener("click", onClick);
       flipRef.current = null;
       flip.destroy();
       book.remove();

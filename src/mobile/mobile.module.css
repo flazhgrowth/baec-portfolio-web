@@ -70,3 +70,14 @@
 .coverHint { margin: 48px 0 0; font: italic 12px var(--font-serif); opacity: 0.4; }
 .fin { justify-content: center; align-items: center; }
 .finText { font: italic 15px var(--font-serif); opacity: 0.7; }
+.fin { text-align: center; padding: 32px; }
+.introKicker { margin: 0; font: 11px var(--font-mono); letter-spacing: 0.3em; color: #8a6a3a; }
+.introTitle { margin: 6px 0 18px; font: 400 28px/1.1 var(--font-serif); }
+
+.toc { padding: 36px 28px; }
+.tocList { list-style: none; margin: 0; padding: 0; }
+.tocItem { border-bottom: 1px solid rgba(29, 26, 22, 0.18); }
+.tocBtn { all: unset; box-sizing: border-box; width: 100%; display: flex; justify-content: space-between; align-items: baseline; padding: 14px 0; font: 16px var(--font-serif); cursor: pointer; }
+.tocNum { font: 11px var(--font-mono); opacity: 0.55; }
+.thanks { padding: 26px 22px 24px; }
+.thanksText { margin: 0 0 10px; font: italic 12px/1.5 var(--font-serif); opacity: 0.8; }

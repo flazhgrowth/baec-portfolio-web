@@ -1,4 +1,4 @@
-import { BOOK_PHOTOS, BOOK_TITLE } from "./bookPages";
+import { BOOK_PHOTOS, BOOK_TITLE, NOSTALGIA_INTRO, THANKS_PARAGRAPHS, isNostalgia } from "./bookPages";
 import s from "./mobile.module.css";
 
 function el<K extends keyof HTMLElementTagNameMap>(
@@ -22,12 +22,40 @@ export function buildPages(): HTMLElement[] {
   cover.append(
     el("div", s.coverRule),
     el("h1", s.coverTitle, BOOK_TITLE),
-    el("p", s.coverSub, "Photographs & notes"),
+    el("p", s.coverSub, "The Photos, and the stories behind it, kinda.."),
     el("p", s.coverHint, "swipe to turn"),
   );
   pages.push(cover);
 
-  BOOK_PHOTOS.forEach((p, i) => {
+  // Contents page: entries are filled in once every page's index is known.
+  const contents = el("div", `${s.page} ${s.paper} ${s.toc}`);
+  const tocList = el("ul", s.tocList);
+  contents.append(el("h2", s.introTitle, "Contents"), tocList);
+  pages.push(contents);
+  const addToc = (label: string, index: number) => {
+    const li = el("li", s.tocItem);
+    const btn = el("button", s.tocBtn);
+    btn.type = "button";
+    btn.dataset.goto = String(index);
+    btn.append(el("span", s.tocLabel, label), el("span", s.tocNum, String(index + 1)));
+    li.append(btn);
+    tocList.append(li);
+  };
+
+  let introDone = false;
+  addToc("Photographs", pages.length);
+  BOOK_PHOTOS.forEach((p) => {
+    if (!introDone && isNostalgia(p.key)) {
+      introDone = true;
+      addToc(`${NOSTALGIA_INTRO.kicker} ${NOSTALGIA_INTRO.title}`, pages.length);
+      const intro = el("div", `${s.page} ${s.paper} ${s.fin}`);
+      intro.append(
+        el("p", s.introKicker, NOSTALGIA_INTRO.kicker),
+        el("h2", s.introTitle, NOSTALGIA_INTRO.title),
+        el("p", s.finText, NOSTALGIA_INTRO.text),
+      );
+      pages.push(intro);
+    }
     const page = el("div", `${s.page} ${s.paper}`);
     const frame = el("div", p.ar < 1 ? `${s.photo} ${s.photoPortrait}` : s.photo);
     const img = el("img", s.img);
@@ -40,14 +68,18 @@ export function buildPages(): HTMLElement[] {
     const plate = el("div", s.plate);
     if (p.title) plate.append(el("h2", s.pTitle, p.title));
     plate.append(el("p", s.pMeta, p.meta), el("p", s.pNote, p.note));
-    page.append(frame, plate, el("span", s.folio, String(i + 1)));
+    page.append(frame, plate, el("span", s.folio, String(pages.length + 1)));
     pages.push(page);
   });
 
-  // keeps the page count even so the closing cover pairs correctly in spreads
-  const fin = el("div", `${s.page} ${s.paper} ${s.fin}`);
-  fin.append(el("p", s.finText, "Thank you for looking."));
-  pages.push(fin);
+  const thanks = el("div", `${s.page} ${s.paper} ${s.thanks}`);
+  addToc("Thank you", pages.length);
+  thanks.append(el("h2", s.introTitle, "Thank you"));
+  THANKS_PARAGRAPHS.forEach((t) => thanks.append(el("p", s.thanksText, t)));
+  pages.push(thanks);
+
+  // blank leaf keeps the total even so the back cover pairs correctly in spreads
+  if ((pages.length + 1) % 2 !== 0) pages.push(el("div", `${s.page} ${s.paper}`));
 
   const back = el("div", `${s.page} ${s.cover}`);
   back.dataset.density = "hard";
