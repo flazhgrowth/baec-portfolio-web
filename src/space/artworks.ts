@@ -16,13 +16,6 @@ export const ARTWORKS: Record<string, Artwork> = {
     ar: 2 / 3,
     note: "We just finished our walk on Yoyogi Park that day. Onto our next destination! Until I saw this. Two strangers that probably don't know each other, walking in the same direction",
   },
-  p3: {
-    src: "/art/p3.jpg",
-    title: "Hōzenji Yokochō, Rain",
-    meta: "Namba, Osaka · 2025",
-    ar: 1.5,
-    note: "Wet stone holds light better than anything else in the city.",
-  },
   x1: {
     src: "https://nos.wjv-1.neo.id/baec-portfolio-bucket/assets/hall-x1.jpg",
     title: "The Apotheosis of Watermelon Mortal",

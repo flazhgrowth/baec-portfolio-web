@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@react-three/fiber": "9.7.0",
+    "page-flip": "^2.0.7",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "three": "0.186.0",
