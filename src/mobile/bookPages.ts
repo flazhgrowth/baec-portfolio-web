@@ -28,7 +28,7 @@ export const isNostalgia = (key: string): boolean => /^n\d+$/.test(key);
 export const NOSTALGIA_INTRO = {
   kicker: "[N]",
   title: "The Nostalgia",
-  text: "Some of these photos are taken using my older camera that is no longer with me. I don't have many cameras to begin with. My mom bought me the 700D (thanks mom). Then, when I finally made some monehhh for myself, I sold that baddie, and get myself the RP. Now, I'm using R6 Mark II. Some photos from the older camera actually came out great (great is a grandeur word. When I say great, the orientation will always be about, whether I like it or not), and to be honest, I don't think I won't be able to recreate these photos again.",
+  text: "Some of these photos were taken using my older camera that is no longer with me. I don't have many cameras to begin with. My mom bought me the 700D (thanks mom). Then, when I finally made some monehhh for myself, I sold that baddie, and get myself the RP. Now, I'm using the R6 Mark II. Some photos from the older camera actually came out pretty great (great is a grandeur word. When I say great, the orientation will always be about, whether I like it or not), and to be honest, I don't think I won't be able to recreate these photos again.",
 };
 
 /** Closing page — one paragraph per entry. EDIT THE TEXT HERE. */
